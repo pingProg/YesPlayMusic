@@ -137,6 +137,18 @@
             @click.native="switchShuffle"
             ><svg-icon icon-class="shuffle"
           /></button-icon>
+          <!-- TODO：
+            添加了按钮；图标？触发函数？
+          -->
+          <!-- NOTE
+            图标文件格式是svg，在assets/icons下，由绘图工具生成svg矢量图文件
+          -->
+          <button-icon
+            :class="{ active: player.shuffle, disabled: player.isPersonalFM }"
+            :title="$t('player.pause')"
+            @click.native="switchStopAtEnd"
+            ><svg-icon icon-class="pause"
+          /></button-icon>
           <button-icon
             v-if="settings.enableReversedMode"
             :class="{ active: player.reversed, disabled: player.isPersonalFM }"
@@ -265,6 +277,9 @@ export default {
     },
     switchShuffle() {
       this.player.switchShuffle();
+    },
+    switchStopAtEnd() {
+      this.player.switchStopAtEnd();
     },
     switchReversed() {
       this.player.switchReversed();

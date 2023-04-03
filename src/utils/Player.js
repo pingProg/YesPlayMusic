@@ -11,6 +11,7 @@ import { isCreateMpris, isCreateTray } from '@/utils/platform';
 import { Howl, Howler } from 'howler';
 import shuffle from 'lodash/shuffle';
 import { decode as base642Buffer } from '@/utils/base64';
+// import { replace } from 'lodash';
 
 const PLAY_PAUSE_FADE_DURATION = 200;
 
@@ -322,7 +323,7 @@ export default class {
       });
     }
   }
-  _playAudioSource(source, autoplay = true) {
+  _playAudioSource(source, autoplay = true, isStopAtEnd = false) {
     Howler.unload();
     this._howler = new Howl({
       src: [source],
@@ -358,6 +359,9 @@ export default class {
         setTitle(this._currentTrack);
       }
       setTrayLikeState(store.state.liked.songs.includes(this.currentTrack.id));
+      if (isStopAtEnd) {
+        this.pause();
+      }
     }
     this.setOutputDevice();
   }
@@ -482,7 +486,8 @@ export default class {
   _replaceCurrentTrack(
     id,
     autoplay = true,
-    ifUnplayableThen = UNPLAYABLE_CONDITION.PLAY_NEXT_TRACK
+    ifUnplayableThen = UNPLAYABLE_CONDITION.PLAY_NEXT_TRACK,
+    isStopAtEnd = false
   ) {
     if (autoplay && this._currentTrack.name) {
       this._scrobble(this.currentTrack, this._howler?.seek());
@@ -495,7 +500,8 @@ export default class {
         track,
         autoplay,
         true,
-        ifUnplayableThen
+        ifUnplayableThen,
+        isStopAtEnd
       );
     });
   }
@@ -506,13 +512,14 @@ export default class {
     track,
     autoplay,
     isCacheNextTrack,
-    ifUnplayableThen = UNPLAYABLE_CONDITION.PLAY_NEXT_TRACK
+    ifUnplayableThen = UNPLAYABLE_CONDITION.PLAY_NEXT_TRACK,
+    isStopAtEnd = false
   ) {
     return this._getAudioSource(track).then(source => {
       if (source) {
         let replaced = false;
         if (track.id === this.currentTrackID) {
-          this._playAudioSource(source, autoplay);
+          this._playAudioSource(source, autoplay, isStopAtEnd);
           replaced = true;
         }
         if (isCacheNextTrack) {
@@ -700,7 +707,24 @@ export default class {
       return false;
     }
     this.current = index;
-    this._replaceCurrentTrack(trackID);
+    var t = false;
+    if (t) {
+      this._replaceCurrentTrack(trackID);
+    } else {
+      this._replaceCurrentTrack(
+        trackID,
+        true,
+        UNPLAYABLE_CONDITION.PLAY_NEXT_TRACK,
+        true
+      );
+      // this._howler?.pause();
+      // this._setPlaying(false);
+      // setTitle(null);
+      // this._pauseDiscordPresence(this._currentTrack);
+
+      // REF
+      // this.pause();
+    }
     return true;
   }
   async playNextFMTrack() {
@@ -944,6 +968,9 @@ export default class {
     if (isCreateMpris) {
       ipcRenderer?.send('switchShuffle', this.shuffle);
     }
+  }
+  switchStopAtEnd() {
+    console.log('****switchStopAtEnd()');
   }
   switchReversed() {
     this.reversed = !this.reversed;
