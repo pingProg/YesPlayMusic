@@ -699,6 +699,16 @@ export default class {
     this.list.append(trackID);
   }
   playNextTrack() {
+    //TODO 检测是否在播完时的nextTrack
+    var isFinish = this.currentTrackDuration <= this.progress;
+    var str =
+      'IF PLAY FINISH : ' +
+      isFinish +
+      ' , Duration :  ' +
+      this.currentTrackDuration +
+      ' Progress : ' +
+      this.progress;
+    console.log(str);
     // TODO: 切换歌曲时增加加载中的状态
     const [trackID, index] = this._getNextTrack();
     if (trackID === undefined) {
@@ -707,24 +717,13 @@ export default class {
       return false;
     }
     this.current = index;
-    var t = false;
-    if (t) {
-      this._replaceCurrentTrack(trackID);
-    } else {
-      this._replaceCurrentTrack(
-        trackID,
-        true,
-        UNPLAYABLE_CONDITION.PLAY_NEXT_TRACK,
-        true
-      );
-      // this._howler?.pause();
-      // this._setPlaying(false);
-      // setTitle(null);
-      // this._pauseDiscordPresence(this._currentTrack);
-
-      // REF
-      // this.pause();
-    }
+    // this._replaceCurrentTrack(trackID);
+    this._replaceCurrentTrack(
+      trackID,
+      true,
+      UNPLAYABLE_CONDITION.PLAY_NEXT_TRACK,
+      isFinish
+    );
     return true;
   }
   async playNextFMTrack() {
