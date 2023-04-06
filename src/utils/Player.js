@@ -712,7 +712,7 @@ export default class {
     this.list.append(trackID);
   }
   playNextTrack() {
-    //检测是否在播完时的nextTrack
+    // NOTE 检测是否在播完时的nextTrack
     var isFinish = this.currentTrackDuration <= this.progress;
     var isNeedToStopAtEnd = isFinish && this.stopAtEnd;
     var str =
@@ -726,7 +726,18 @@ export default class {
       this.stopAtEnd;
     console.log(str);
     // TODO: 切换歌曲时增加加载中的状态
-    const [trackID, index] = this._getNextTrack();
+    // const [trackID, index] = this._getNextTrack();
+    var trackID;
+    var index;
+    var limitSeconds = 2.5 * 60;
+    if (this.currentTrackDuration < limitSeconds) {
+      console.log(
+        'song duration less than ' + limitSeconds + ', so repeat once'
+      );
+      [trackID, index] = [this.currentTrackID, this.current];
+    } else {
+      [trackID, index] = this._getNextTrack();
+    }
     if (trackID === undefined) {
       this._howler?.stop();
       this._setPlaying(false);
@@ -734,6 +745,12 @@ export default class {
     }
     this.current = index;
     // this._replaceCurrentTrack(trackID);
+    //     var limitSeconds = 2.5 * 60;
+    // if (this.currentTrackDuration < limitSeconds) {
+    //   console.log(
+    //     'song duration less than ' + limitSeconds + ', so repeat once'
+    //   );
+    //   [trackID, index] = [this.currentTrack, this.current];
     this._replaceCurrentTrack(
       trackID,
       true,
