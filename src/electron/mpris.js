@@ -20,6 +20,7 @@ export function createMpris(window) {
   );
   player.on('loopStatus', () => renderer.send('repeat'));
   player.on('shuffle', () => renderer.send('shuffle'));
+  player.on('stopAtEnd', () => renderer.send('stopAtEnd'));
 
   ipcMain.on('player', (e, { playing }) => {
     player.playbackStatus = playing
@@ -58,5 +59,9 @@ export function createMpris(window) {
 
   ipcMain.on('switchShuffle', (e, shuffle) => {
     player.shuffle = shuffle;
+  });
+
+  ipcMain.on('switchStopAtEnd', (e, stopAtEnd) => {
+    player.stopAtEnd = stopAtEnd;
   });
 }

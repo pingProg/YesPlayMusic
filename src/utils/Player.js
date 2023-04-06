@@ -69,6 +69,7 @@ export default class {
     this._volumeBeforeMuted = 1; // 用于保存静音前的音量
     this._personalFMLoading = false; // 是否正在私人FM中加载新的track
     this._personalFMNextLoading = false; // 是否正在缓存私人FM的下一首歌曲
+    this._stopAtEnd = false;
 
     // 播放信息
     this._list = []; // 播放列表
@@ -188,6 +189,17 @@ export default class {
   }
   get personalFMTrack() {
     return this._personalFMTrack;
+  }
+  get stopAtEnd() {
+    return this._stopAtEnd;
+  }
+  set stopAtEnd(stopAtEnd) {
+    if (this._isPersonalFM) return;
+    if (stopAtEnd !== true && stopAtEnd !== false) {
+      console.warn('stopAtEnd: invalid args, must be Boolean');
+      return;
+    }
+    this._stopAtEnd = stopAtEnd;
   }
   get currentTrackDuration() {
     const trackDuration = this._currentTrack.dt || 1000;
@@ -361,6 +373,7 @@ export default class {
       setTrayLikeState(store.state.liked.songs.includes(this.currentTrack.id));
       if (isStopAtEnd) {
         this.pause();
+        console.log('STOP AT END IS TRUE, SO STOP');
       }
     }
     this.setOutputDevice();
@@ -699,15 +712,18 @@ export default class {
     this.list.append(trackID);
   }
   playNextTrack() {
-    //TODO 检测是否在播完时的nextTrack
+    //检测是否在播完时的nextTrack
     var isFinish = this.currentTrackDuration <= this.progress;
+    var isNeedToStopAtEnd = isFinish && this.stopAtEnd;
     var str =
       'IF PLAY FINISH : ' +
       isFinish +
       ' , Duration :  ' +
       this.currentTrackDuration +
-      ' Progress : ' +
-      this.progress;
+      ' , Progress : ' +
+      this.progress +
+      ' , stopAtEnd : ' +
+      this.stopAtEnd;
     console.log(str);
     // TODO: 切换歌曲时增加加载中的状态
     const [trackID, index] = this._getNextTrack();
@@ -722,7 +738,7 @@ export default class {
       trackID,
       true,
       UNPLAYABLE_CONDITION.PLAY_NEXT_TRACK,
-      isFinish
+      isNeedToStopAtEnd
     );
     return true;
   }
@@ -969,7 +985,12 @@ export default class {
     }
   }
   switchStopAtEnd() {
-    console.log('****switchStopAtEnd()');
+    this.stopAtEnd = !this.stopAtEnd;
+    console.log('****switchStopAtEnd() : ' + this.stopAtEnd);
+    //TODO IPC?
+    if (isCreateMpris) {
+      ipcRenderer?.send('switchStopAtEnd', this.stopAtEnd);
+    }
   }
   switchReversed() {
     this.reversed = !this.reversed;
