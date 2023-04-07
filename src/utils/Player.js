@@ -70,6 +70,8 @@ export default class {
     this._personalFMLoading = false; // 是否正在私人FM中加载新的track
     this._personalFMNextLoading = false; // 是否正在缓存私人FM的下一首歌曲
     this._stopAtEnd = false;
+    this._repeatOnceTrackID = 'NULL';
+    this._repeatNext = false;
 
     // 播放信息
     this._list = []; // 播放列表
@@ -200,6 +202,18 @@ export default class {
       return;
     }
     this._stopAtEnd = stopAtEnd;
+  }
+  get repeatOnceTrackID() {
+    return this._repeatOnceTrackID;
+  }
+  set repeatOnceTrackID(trackID) {
+    this._repeatOnceTrackID = trackID;
+  }
+  get repeating() {
+    return this._repeatNext;
+  }
+  set repeating(isRepeat) {
+    this._repeatOnceTrackID = isRepeat;
   }
   get currentTrackDuration() {
     const trackDuration = this._currentTrack.dt || 1000;
@@ -712,10 +726,38 @@ export default class {
     this.list.append(trackID);
   }
   playNextTrack() {
+    // TODO: 切换歌曲时增加加载中的状态
+    // const [trackID, index] = this._getNextTrack();
+    let trackID;
+    let index;
+    let limitSeconds = 4 * 60;
+    if (this.currentTrackDuration < limitSeconds) {
+      if (this.repeatOnceTrackID != this.currentTrackID) {
+        console.log(
+          'song duration less than ' + limitSeconds + ', so repeat once'
+        );
+        this.repeatOnceTrackID = this.currentTrackID;
+        [trackID, index] = [this.currentTrackID, this.current];
+      } else {
+        console.log('REPEATED, RESET ID');
+        this.repeatOnceTrackID = '';
+        [trackID, index] = this._getNextTrack();
+      }
+    } else {
+      console.log('song duratin more than ' + limitSeconds + ', RESET ID');
+      this.repeatOnceTrackID = '';
+      [trackID, index] = this._getNextTrack();
+    }
+
+    if (trackID === undefined) {
+      this._howler?.stop();
+      this._setPlaying(false);
+      return false;
+    }
+    this.current = index;
     // NOTE 检测是否在播完时的nextTrack
     var isFinish = this.currentTrackDuration <= this.progress;
-    var isNeedToStopAtEnd = isFinish && this.stopAtEnd;
-    var str =
+    let str =
       'IF PLAY FINISH : ' +
       isFinish +
       ' , Duration :  ' +
@@ -725,40 +767,33 @@ export default class {
       ' , stopAtEnd : ' +
       this.stopAtEnd;
     console.log(str);
-    // TODO: 切换歌曲时增加加载中的状态
-    // const [trackID, index] = this._getNextTrack();
-    var trackID;
-    var index;
-    var limitSeconds = 2.5 * 60;
-    if (this.currentTrackDuration < limitSeconds) {
-      console.log(
-        'song duration less than ' + limitSeconds + ', so repeat once'
-      );
-      [trackID, index] = [this.currentTrackID, this.current];
-    } else {
-      [trackID, index] = this._getNextTrack();
-    }
-    if (trackID === undefined) {
-      this._howler?.stop();
-      this._setPlaying(false);
-      return false;
-    }
-    this.current = index;
-    // this._replaceCurrentTrack(trackID);
-    //     var limitSeconds = 2.5 * 60;
-    // if (this.currentTrackDuration < limitSeconds) {
-    //   console.log(
-    //     'song duration less than ' + limitSeconds + ', so repeat once'
-    //   );
-    //   [trackID, index] = [this.currentTrack, this.current];
+
     this._replaceCurrentTrack(
       trackID,
       true,
       UNPLAYABLE_CONDITION.PLAY_NEXT_TRACK,
-      isNeedToStopAtEnd
+      isFinish && this.stopAtEnd && this.repeatOnceTrackID === ''
     );
     return true;
+
+    // function isNeedToStopAtEnd() {
+    //   return isFinish && this.stopAtEnd && this.repeatOnceTrackID === '';
+    // }
+
+    // function debugPrint() {
+    //   let str =
+    //     'IF PLAY FINISH : ' +
+    //     isFinish +
+    //     ' , Duration :  ' +
+    //     this.currentTrackDuration +
+    //     ' , Progress : ' +
+    //     this.progress +
+    //     ' , stopAtEnd : ' +
+    //     this.stopAtEnd;
+    //   console.log(str);
+    // }
   }
+
   async playNextFMTrack() {
     if (this._personalFMLoading) {
       return false;
