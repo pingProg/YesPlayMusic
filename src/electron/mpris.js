@@ -21,6 +21,7 @@ export function createMpris(window) {
   player.on('loopStatus', () => renderer.send('repeat'));
   player.on('shuffle', () => renderer.send('shuffle'));
   player.on('stopAtEnd', () => renderer.send('stopAtEnd'));
+  player.on('continueAtSkip', () => renderer.send('continueAtSkip'));
 
   ipcMain.on('player', (e, { playing }) => {
     player.playbackStatus = playing
@@ -63,5 +64,9 @@ export function createMpris(window) {
 
   ipcMain.on('switchStopAtEnd', (e, stopAtEnd) => {
     player.stopAtEnd = stopAtEnd;
+  });
+
+  ipcMain.on('switchContinueAtSkip', (e, continueAtSkip) => {
+    player.continueAtSkip = continueAtSkip;
   });
 }

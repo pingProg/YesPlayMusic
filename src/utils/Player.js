@@ -70,6 +70,7 @@ export default class {
     this._personalFMLoading = false; // 是否正在私人FM中加载新的track
     this._personalFMNextLoading = false; // 是否正在缓存私人FM的下一首歌曲
     this._stopAtEnd = false;
+    this._continueAtSkip = true;
     this._repeatOnceTrackID = 'NULL';
     this._repeatNext = false;
 
@@ -202,6 +203,17 @@ export default class {
       return;
     }
     this._stopAtEnd = stopAtEnd;
+  }
+  get continueAtSkip() {
+    return this._continueAtSkip;
+  }
+  set continueAtSkip(continueAtSkip) {
+    if (this._isPersonalFM) return;
+    if (continueAtSkip !== true && continueAtSkip !== false) {
+      console.warn('continueAtSkip: invalid args, must be Boolean');
+      return;
+    }
+    this._continueAtSkip = continueAtSkip;
   }
   get repeatOnceTrackID() {
     return this._repeatOnceTrackID;
@@ -730,21 +742,21 @@ export default class {
     // const [trackID, index] = this._getNextTrack();
     let trackID;
     let index;
-    let limitSeconds = 4 * 60;
-    if (this.currentTrackDuration < limitSeconds) {
-      if (this.repeatOnceTrackID != this.currentTrackID) {
-        console.log(
-          'song duration less than ' + limitSeconds + ', so repeat once'
-        );
-        this.repeatOnceTrackID = this.currentTrackID;
-        [trackID, index] = [this.currentTrackID, this.current];
-      } else {
-        console.log('REPEATED, RESET ID');
-        this.repeatOnceTrackID = '';
-        [trackID, index] = this._getNextTrack();
-      }
+    let limitSeconds = 3 * 60;
+    let isShortSongsNeedToRepeatOnce = this.currentTrackDuration < limitSeconds;
+    if (
+      isShortSongsNeedToRepeatOnce &&
+      this.repeatOnceTrackID != this.currentTrackID
+    ) {
+      console.log(
+        'song duration less than ' + limitSeconds + ', so repeat once'
+      );
+      this.repeatOnceTrackID = this.currentTrackID;
+      [trackID, index] = [this.currentTrackID, this.current];
     } else {
-      console.log('song duratin more than ' + limitSeconds + ', RESET ID');
+      isShortSongsNeedToRepeatOnce
+        ? console.log('REPEATED, RESET ID')
+        : console.log('song duratin more than ' + limitSeconds + ', RESET ID');
       this.repeatOnceTrackID = '';
       [trackID, index] = this._getNextTrack();
     }
@@ -756,42 +768,32 @@ export default class {
     }
     this.current = index;
     // NOTE 检测是否在播完时的nextTrack
-    var isFinish = this.currentTrackDuration <= this.progress;
+    let isPlayFinish = this.progress >= this.currentTrackDuration;
+    let isContinueAtSkip = !isPlayFinish && this.continueAtSkip;
+    let isStopFinally =
+      !isContinueAtSkip && this.stopAtEnd && this.repeatOnceTrackID === '';
     let str =
       'IF PLAY FINISH : ' +
-      isFinish +
+      isPlayFinish +
       ' , Duration :  ' +
       this.currentTrackDuration +
       ' , Progress : ' +
       this.progress +
       ' , stopAtEnd : ' +
-      this.stopAtEnd;
+      this.stopAtEnd +
+      ' , continueAtSkip : ' +
+      this.continueAtSkip +
+      ' , isShortSongsNeedToRepeatOnce : ' +
+      isShortSongsNeedToRepeatOnce;
     console.log(str);
 
     this._replaceCurrentTrack(
       trackID,
       true,
       UNPLAYABLE_CONDITION.PLAY_NEXT_TRACK,
-      isFinish && this.stopAtEnd && this.repeatOnceTrackID === ''
+      isStopFinally
     );
     return true;
-
-    // function isNeedToStopAtEnd() {
-    //   return isFinish && this.stopAtEnd && this.repeatOnceTrackID === '';
-    // }
-
-    // function debugPrint() {
-    //   let str =
-    //     'IF PLAY FINISH : ' +
-    //     isFinish +
-    //     ' , Duration :  ' +
-    //     this.currentTrackDuration +
-    //     ' , Progress : ' +
-    //     this.progress +
-    //     ' , stopAtEnd : ' +
-    //     this.stopAtEnd;
-    //   console.log(str);
-    // }
   }
 
   async playNextFMTrack() {
@@ -1039,9 +1041,15 @@ export default class {
   switchStopAtEnd() {
     this.stopAtEnd = !this.stopAtEnd;
     console.log('****switchStopAtEnd() : ' + this.stopAtEnd);
-    //TODO IPC?
     if (isCreateMpris) {
       ipcRenderer?.send('switchStopAtEnd', this.stopAtEnd);
+    }
+  }
+  switchContinueAtSkip() {
+    this.continueAtSkip = !this.continueAtSkip;
+    console.log('****switchContinueAtSkip() : ' + this.continueAtSkip);
+    if (isCreateMpris) {
+      ipcRenderer?.send('switchContinueAtSkip', this.continueAtSkip);
     }
   }
   switchReversed() {

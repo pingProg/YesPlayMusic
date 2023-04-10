@@ -137,11 +137,8 @@
             @click.native="switchShuffle"
             ><svg-icon icon-class="shuffle"
           /></button-icon>
-          <!-- TODO：图标？触发函数？
-          -->
-          <!-- NOTE
-            图标文件格式是svg，在assets/icons下，由绘图工具生成svg矢量图文件
-          -->
+          <!-- NOTE 图标文件格式是svg，在assets/icons下，由绘图工具生成svg矢量图文件 -->
+          <!-- 下一曲时自动暂停 -->
           <button-icon
             :class="{
               active: player.stopAtEnd,
@@ -150,6 +147,16 @@
             :title="$t('player.pause')"
             @click.native="switchStopAtEnd"
             ><svg-icon icon-class="stopAtEnd"
+          /></button-icon>
+          <!-- 自然播完后自动暂停 -->
+          <button-icon
+            :class="{
+              active: player.continueAtSkip,
+              disabled: player.isPersonalFM,
+            }"
+            :title="$t('player.pause')"
+            @click.native="switchContinueAtSkip"
+            ><svg-icon icon-class="continueAtSkip"
           /></button-icon>
           <button-icon
             v-if="settings.enableReversedMode"
@@ -282,6 +289,9 @@ export default {
     },
     switchStopAtEnd() {
       this.player.switchStopAtEnd();
+    },
+    switchContinueAtSkip() {
+      this.player.switchContinueAtSkip();
     },
     switchReversed() {
       this.player.switchReversed();
