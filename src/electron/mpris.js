@@ -22,6 +22,7 @@ export function createMpris(window) {
   player.on('shuffle', () => renderer.send('shuffle'));
   player.on('stopAtEnd', () => renderer.send('stopAtEnd'));
   player.on('continueAtSkip', () => renderer.send('continueAtSkip'));
+  player.on('repeatShortSongOnce', () => renderer.send('repeatShortSongOnce'));
 
   ipcMain.on('player', (e, { playing }) => {
     player.playbackStatus = playing
@@ -68,5 +69,9 @@ export function createMpris(window) {
 
   ipcMain.on('switchContinueAtSkip', (e, continueAtSkip) => {
     player.continueAtSkip = continueAtSkip;
+  });
+
+  ipcMain.on('switchRepeatShortSongOnce', (e, repeatShortSongOnce) => {
+    player.repeatShortSongOnce = repeatShortSongOnce;
   });
 }

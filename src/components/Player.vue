@@ -158,6 +158,16 @@
             @click.native="switchContinueAtSkip"
             ><svg-icon icon-class="continueAtSkip"
           /></button-icon>
+          <!-- 较短的曲目播完后，自动重播一次 -->
+          <button-icon
+            :class="{
+              active: player.repeatShortSongOnce,
+              disabled: player.isPersonalFM,
+            }"
+            :title="$t('player.pause')"
+            @click.native="switchRepeatShortSongOnce"
+            ><svg-icon icon-class="repeatOnce"
+          /></button-icon>
           <button-icon
             v-if="settings.enableReversedMode"
             :class="{ active: player.reversed, disabled: player.isPersonalFM }"
@@ -292,6 +302,9 @@ export default {
     },
     switchContinueAtSkip() {
       this.player.switchContinueAtSkip();
+    },
+    switchRepeatShortSongOnce() {
+      this.player.switchRepeatShortSongOnce();
     },
     switchReversed() {
       this.player.switchReversed();
