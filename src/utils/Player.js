@@ -1035,6 +1035,7 @@ export default class {
     });
   }
   addTrackToPlayNext(trackID, playNow = false) {
+    console.log('addTrackToPlayNext() : ' + trackID);
     this._playNextList.push(trackID);
     if (playNow) {
       this.playNextTrack();
@@ -1106,6 +1107,19 @@ export default class {
     );
     if (isCreateMpris) {
       ipcRenderer?.send('switchRepeatShortSongOnce', this.repeatShortSongOnce);
+    }
+  }
+  generateRandomList() {
+    const geneCount = 5;
+    let list = this._list;
+    list = shuffle(list).slice(0, geneCount);
+    console.log('****generateRandomList()');
+    for (let i = 0; i < list.length; i++) {
+      console.log(list[i]);
+      this.addTrackToPlayNext(list[i]);
+    }
+    if (isCreateMpris) {
+      ipcRenderer?.send('generateRandomList', true);
     }
   }
   switchReversed() {

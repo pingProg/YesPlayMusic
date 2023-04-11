@@ -168,6 +168,16 @@
             @click.native="switchRepeatShortSongOnce"
             ><svg-icon icon-class="repeatOnce"
           /></button-icon>
+          <!-- 随机生成包含几首曲目的下一次播放的列表 -->
+          <button-icon
+            :class="{
+              // active: player.repeatShortSongOnce,
+              disabled: player.isPersonalFM,
+            }"
+            :title="$t('player.pause')"
+            @click.native="generateRandomList"
+            ><svg-icon icon-class="generateRandomList"
+          /></button-icon>
           <button-icon
             v-if="settings.enableReversedMode"
             :class="{ active: player.reversed, disabled: player.isPersonalFM }"
@@ -305,6 +315,9 @@ export default {
     },
     switchRepeatShortSongOnce() {
       this.player.switchRepeatShortSongOnce();
+    },
+    generateRandomList() {
+      this.player.generateRandomList();
     },
     switchReversed() {
       this.player.switchReversed();
