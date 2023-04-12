@@ -1089,15 +1089,23 @@ export default class {
   }
   generateRandomList() {
     const geneCount = 7;
-    let list = this._list;
-    list = shuffle(list).slice(0, geneCount);
     console.log('****generateRandomList()');
-    for (let i = 0; i < list.length; i++) {
-      console.log(list[i]);
-      this.addTrackToPlayNext(list[i]);
+    for (
+      let i = 0, list = this._list, listSize = list.length;
+      i < geneCount;
+      i++
+    ) {
+      const index = getRandomInt(0, listSize - 1);
+      const trackID = list[index];
+      console.debug(trackID);
+      this.addTrackToPlayNext(trackID);
     }
     if (isCreateMpris) {
       ipcRenderer?.send('generateRandomList', true);
+    }
+
+    function getRandomInt(n, m) {
+      return Math.floor(Math.random() * (m - n + 1) + n);
     }
   }
   switchReversed() {
