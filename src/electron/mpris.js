@@ -25,7 +25,6 @@ export function createMpris(window) {
   player.on('repeatShortSongOnce', () => renderer.send('repeatShortSongOnce'));
   player.on('generateRandomList', () => renderer.send('generateRandomList'));
 
-
   ipcMain.on('player', (e, { playing }) => {
     player.playbackStatus = playing
       ? Player.PLAYBACK_STATUS_PLAYING
