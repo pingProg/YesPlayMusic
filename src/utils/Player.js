@@ -782,28 +782,6 @@ export default class {
     this.list.append(trackID);
   }
   playNextTrack() {
-    // const [trackID, index] = this._getNextTrack();
-    // let trackID;
-    // let index;
-    // let limitSeconds = 3 * 60;
-    // let isShortSongs = this.currentTrackDuration < limitSeconds;
-    // let isNeedToRepeatOnce =
-    //   isShortSongs && this.repeatOnceTrackID != this.currentTrackID;
-    // let isRepeatOnceAtEnd = this.repeatShortSongOnce && isNeedToRepeatOnce;
-    // let isPlayFinish = this.progress >= this.currentTrackDuration;
-    // if (isRepeatOnceAtEnd && isPlayFinish) {
-    //   console.log(
-    //     'song duration less than ' + limitSeconds + ', so repeat once'
-    //   );
-    //   this.repeatOnceTrackID = this.currentTrackID;
-    //   [trackID, index] = [this.currentTrackID, this.current];
-    // } else {
-    //   this.isRepeatShortSongs && isShortSongs && isPlayFinish
-    //     ? console.log('REPEATED, RESET ID')
-    //     : console.log('RESET ID');
-    //   this.repeatOnceTrackID = '';
-    //   [trackID, index] = this._getNextTrack();
-    // }
     let isPlayFinish = this._isPlayFinish();
     // NOTE 自然播放完成后，才可以重放
     let isRepeatOnceAtEnd =
@@ -1110,7 +1088,7 @@ export default class {
     }
   }
   generateRandomList() {
-    const geneCount = 5;
+    const geneCount = 7;
     let list = this._list;
     list = shuffle(list).slice(0, geneCount);
     console.log('****generateRandomList()');
@@ -1131,5 +1109,17 @@ export default class {
   }
   removeTrackFromQueue(index) {
     this._playNextList.splice(index, 1);
+  }
+  removeTrackFromQueueByTrackID(trackID) {
+    console.debug('removeTrackFromQueueByTrackID(trackID) : ' + trackID);
+    for (let i = 0, length = this._playNextList.length; i < length; i++) {
+      console.debug(this._playNextList[i]);
+    }
+    const index = this._playNextList.indexOf(trackID);
+    if (index >= 0) {
+      this.removeTrackFromQueue(index);
+    } else {
+      console.debug('cannot find trackID ' + trackID + ' in _playNextList');
+    }
   }
 }

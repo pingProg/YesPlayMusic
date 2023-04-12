@@ -65,6 +65,19 @@
       <div></div>
     </div>
 
+    <!-- 按钮：从队列播放列表删除 -->
+    <div v-if="showTrackTime" class="actions">
+      <button @click="removeFromPlayNextListByTrackID">
+        <!-- <svg-icon v-show="false" icon-class="cross-delete"></svg-icon> -->
+        <svg-icon
+          icon-class="cross-delete"
+          :style="{
+            visibility: focus ? 'visible' : 'hidden',
+          }"
+        ></svg-icon>
+      </button>
+    </div>
+
     <div v-if="showLikeButton" class="actions">
       <button @click="likeThisSong">
         <svg-icon
@@ -217,6 +230,9 @@ export default {
     },
     likeThisSong() {
       this.$parent.likeATrack(this.track.id);
+    },
+    removeFromPlayNextListByTrackID() {
+      this.$store.state.player.removeTrackFromQueueByTrackID(this.track.id);
     },
   },
 };
