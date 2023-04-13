@@ -399,8 +399,8 @@ export default class {
       }
       setTrayLikeState(store.state.liked.songs.includes(this.currentTrack.id));
       if (isStopAtEnd) {
-        this.pause();
         console.log('STOP AT END IS TRUE, SO STOP');
+        this.pause();
       }
     }
     this.setOutputDevice();
@@ -759,6 +759,7 @@ export default class {
     let isShortSongs = this._isShortSongs();
     let isNeedToRepeatOnce =
       isShortSongs && this.repeatOnceTrackID != this.currentTrackID;
+
     let isRepeatOnceAtEnd = this.repeatShortSongOnce && isNeedToRepeatOnce;
     let isPlayFinish = this._isPlayFinish();
     if (isRepeatOnceAtEnd && isPlayFinish) {
@@ -770,9 +771,19 @@ export default class {
       this.repeatOnceTrackID = this.currentTrackID;
       return [this.currentTrackID, this.current];
     } else {
-      this.isRepeatShortSongs && isShortSongs && isPlayFinish
-        ? console.log('REPEATED, RESET ID')
-        : console.log('RESET ID');
+      if (!isShortSongs) {
+        console.log(
+          'song duration less than ' +
+            this._shortSongMaxDurationSec +
+            ', RESET ID'
+        );
+      } else if (!isPlayFinish) {
+        console.log('skip play, so RESET ID');
+      } else if (!this.isRepeatShortSongs) {
+        console.log('RepeatShortSongs disabled, so RESET ID');
+      } else {
+        console.log('REPEATED, RESET ID');
+      }
       this.repeatOnceTrackID = '';
       return this._getNextTrack();
     }
@@ -782,6 +793,13 @@ export default class {
     this.list.append(trackID);
   }
   playNextTrack() {
+    console.log(
+      'before playNextTrack() : current TrackID : ' +
+        trackID +
+        ', index : ' +
+        index
+    );
+
     let isPlayFinish = this._isPlayFinish();
     // NOTE 自然播放完成后，才可以重放
     let isRepeatOnceAtEnd =
@@ -790,6 +808,12 @@ export default class {
       isPlayFinish &&
       this.repeatOnceTrackID != this.currentTrackID;
     const [trackID, index] = this._getNextTrack_mod();
+    console.log(
+      '_getNextTrack_mod() RETRUN : current TrackID : ' +
+        trackID +
+        ', index : ' +
+        index
+    );
 
     if (trackID === undefined) {
       this._howler?.stop();
@@ -1088,7 +1112,7 @@ export default class {
     }
   }
   generateRandomList() {
-    const geneCount = 7;
+    const geneCount = 5;
     console.log('****generateRandomList()');
     for (
       let i = 0, list = this._list, listSize = list.length;
@@ -1097,7 +1121,7 @@ export default class {
     ) {
       const index = getRandomInt(0, listSize - 1);
       const trackID = list[index];
-      console.debug(trackID);
+      console.log(trackID);
       this.addTrackToPlayNext(trackID);
     }
     if (isCreateMpris) {
@@ -1119,15 +1143,42 @@ export default class {
     this._playNextList.splice(index, 1);
   }
   removeTrackFromQueueByTrackID(trackID) {
-    console.debug('removeTrackFromQueueByTrackID(trackID) : ' + trackID);
-    for (let i = 0, length = this._playNextList.length; i < length; i++) {
-      console.debug(this._playNextList[i]);
-    }
+    console.log('removeTrackFromQueueByTrackID(trackID) : ' + trackID);
+    // for (let i = 0, length = this._playNextList.length; i < length; i++) {
+    //   console.log(this._playNextList[i]);
+    // }
     const index = this._playNextList.indexOf(trackID);
     if (index >= 0) {
       this.removeTrackFromQueue(index);
     } else {
-      console.debug('cannot find trackID ' + trackID + ' in _playNextList');
+      console.log('cannot find trackID ' + trackID + ' in _playNextList');
     }
+  }
+  swapAtQueue(indexA, indexB) {
+    const trackA = this._playNextList[indexA];
+    const trackB = this._playNextList[indexB];
+    console.log('swap index track : %s, %s', trackA, trackB);
+    this._playNextList.splice(indexA, 1, trackB);
+    this._playNextList.splice(indexB, 1, trackA);
+  }
+  moveUpAtQueue(trackID) {
+    console.log('moveUpAtQueue(trackID) : ' + trackID);
+    const index = this._playNextList.indexOf(trackID);
+    if (index === 0) {
+      console.log('track is first at queue : ignore');
+      return;
+    }
+    console.log('swap index : %s, %s', index - 1, index);
+    this.swapAtQueue(index - 1, index);
+  }
+  moveDownAtQueue(trackID) {
+    console.log('moveDownAtQueue(trackID) : ' + trackID);
+    const index = this._playNextList.indexOf(trackID);
+    if (index >= this._playNextList.length - 1) {
+      console.log('track is last at queue : ignore');
+      return;
+    }
+    console.log('swap index : %s, %s', index + 1, index);
+    this.swapAtQueue(index + 1, index);
   }
 }

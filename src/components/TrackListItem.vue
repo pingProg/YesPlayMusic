@@ -65,12 +65,29 @@
       <div></div>
     </div>
 
-    <!-- 按钮：从队列播放列表删除 -->
-    <div v-if="showTrackTime" class="actions">
-      <button @click="removeFromPlayNextListByTrackID">
-        <!-- <svg-icon v-show="false" icon-class="cross-delete"></svg-icon> -->
+    <div v-if="showLikeButton" class="actions">
+      <!-- 按钮：从队列播放列表删除 -->
+      <button @click="removeTrackFromQueueByTrackID">
         <svg-icon
           icon-class="cross-delete"
+          :style="{
+            visibility: focus ? 'visible' : 'hidden',
+          }"
+        ></svg-icon>
+      </button>
+      <!-- 按钮：将在队列的曲目上移 -->
+      <button @click="moveUpAtQueue">
+        <svg-icon
+          icon-class="queueUp"
+          :style="{
+            visibility: focus ? 'visible' : 'hidden',
+          }"
+        ></svg-icon>
+      </button>
+      <!-- 按钮：将在队列的曲目下移 -->
+      <button @click="moveDownAtQueue">
+        <svg-icon
+          icon-class="queueDown"
           :style="{
             visibility: focus ? 'visible' : 'hidden',
           }"
@@ -231,8 +248,14 @@ export default {
     likeThisSong() {
       this.$parent.likeATrack(this.track.id);
     },
-    removeFromPlayNextListByTrackID() {
+    removeTrackFromQueueByTrackID() {
       this.$store.state.player.removeTrackFromQueueByTrackID(this.track.id);
+    },
+    moveUpAtQueue() {
+      this.$store.state.player.moveUpAtQueue(this.track.id);
+    },
+    moveDownAtQueue() {
+      this.$store.state.player.moveDownAtQueue(this.track.id);
     },
   },
 };
