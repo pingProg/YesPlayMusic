@@ -795,9 +795,9 @@ export default class {
   playNextTrack() {
     console.log(
       'before playNextTrack() : current TrackID : ' +
-        trackID +
+        this.currentTrackID +
         ', index : ' +
-        index
+        this.current
     );
 
     let isPlayFinish = this._isPlayFinish();
@@ -810,9 +810,9 @@ export default class {
     const [trackID, index] = this._getNextTrack_mod();
     console.log(
       '_getNextTrack_mod() RETRUN : current TrackID : ' +
-        trackID +
+        this.currentTrackID +
         ', index : ' +
-        index
+        this.current
     );
 
     if (trackID === undefined) {
