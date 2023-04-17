@@ -291,11 +291,13 @@ export default class {
       }
     }, 1000);
   }
-  _getNextTrack() {
+  _getNextTrack(isReadonly) {
     const next = this._reversed ? this.current - 1 : this.current + 1;
 
     if (this._playNextList.length > 0) {
-      let trackID = this._playNextList.shift();
+      let trackID = isReadonly
+        ? this._playNextList[0]
+        : this._playNextList.shift();
       return [trackID, this.current];
     }
 
@@ -589,7 +591,7 @@ export default class {
   _cacheNextTrack() {
     let nextTrackID = this._isPersonalFM
       ? this._personalFMNextTrack?.id ?? 0
-      : this._getNextTrack()[0];
+      : this._getNextTrack(true)[0];
     if (!nextTrackID) return;
     if (this._personalFMTrack.id == nextTrackID) return;
     getTrackDetail(nextTrackID).then(data => {
