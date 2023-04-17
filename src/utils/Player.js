@@ -1096,6 +1096,8 @@ export default class {
   }
   switchStopAtEnd() {
     this.stopAtEnd = !this.stopAtEnd;
+    const hint = (this.stopAtEnd ? `开启：` : `关闭`) + `播完暂停`;
+    store.dispatch('showToast', hint);
     console.log('****switchStopAtEnd() : ' + this.stopAtEnd);
     if (isCreateMpris) {
       ipcRenderer?.send('switchStopAtEnd', this.stopAtEnd);
@@ -1103,6 +1105,10 @@ export default class {
   }
   switchContinueAtSkip() {
     this.continueAtSkip = !this.continueAtSkip;
+    const hint = this.continueAtSkip
+      ? `开启：`
+      : `关闭：` + `点击下一曲时，不自动暂停`;
+    store.dispatch('showToast', hint);
     console.log('****switchContinueAtSkip() : ' + this.continueAtSkip);
     if (isCreateMpris) {
       ipcRenderer?.send('switchContinueAtSkip', this.continueAtSkip);
@@ -1110,6 +1116,10 @@ export default class {
   }
   switchRepeatShortSongOnce() {
     this.repeatShortSongOnce = !this.repeatShortSongOnce;
+    const hint = this.repeatShortSongOnce
+      ? `开启：`
+      : `关闭：` + `重播一次短的曲目`;
+    store.dispatch('showToast', hint);
     console.log(
       '****switchRepeatShortSongOnce() : ' + this.repeatShortSongOnce
     );
@@ -1118,8 +1128,8 @@ export default class {
     }
   }
   generateRandomList() {
-    const geneCount = 5;
     console.log('****generateRandomList()');
+    const geneCount = 5;
     for (
       let i = 0, list = this._list, listSize = list.length;
       i < geneCount;

@@ -144,7 +144,7 @@
               active: player.stopAtEnd,
               disabled: player.isPersonalFM,
             }"
-            :title="$t('player.pause')"
+            :title="$t('player.stopAtEnd')"
             @click.native="switchStopAtEnd"
             ><svg-icon icon-class="stopAtEnd"
           /></button-icon>
@@ -154,7 +154,7 @@
               active: player.continueAtSkip,
               disabled: player.isPersonalFM,
             }"
-            :title="$t('player.pause')"
+            :title="$t('player.continueAtSkip')"
             @click.native="switchContinueAtSkip"
             ><svg-icon icon-class="continueAtSkip"
           /></button-icon>
@@ -164,17 +164,16 @@
               active: player.repeatShortSongOnce,
               disabled: player.isPersonalFM,
             }"
-            :title="$t('player.pause')"
+            :title="$t('player.repeatShortSongOnce')"
             @click.native="switchRepeatShortSongOnce"
             ><svg-icon icon-class="repeatOnce"
           /></button-icon>
-          <!-- 随机生成包含几首曲目的下一次播放的列表 -->
+          <!-- 将随机的几首曲目添加到队列 -->
           <button-icon
             :class="{
-              // active: player.repeatShortSongOnce,
               disabled: player.isPersonalFM,
             }"
-            :title="$t('player.pause')"
+            :title="$t('player.generateRandomList')"
             @click.native="generateRandomList"
             ><svg-icon icon-class="generateRandomList"
           /></button-icon>
