@@ -74,6 +74,7 @@ export default class {
     this._repeatOnceTrackID = 'NULL';
     this._repeatShortSongOnce = true;
     this._shortSongMaxDurationSec = 3 * 60;
+    this._prevTrackID = 0;
 
     // 播放信息
     this._list = []; // 播放列表
@@ -228,6 +229,12 @@ export default class {
   set repeatShortSongOnce(isRepeat) {
     this._repeatShortSongOnce = isRepeat;
   }
+  get prevTrackID() {
+    return this._prevTrackID;
+  }
+  set prevTrackID(TrackID) {
+    this._prevTrackID = TrackID;
+  }
   get currentTrackDuration() {
     const trackDuration = this._currentTrack.dt || 1000;
     let duration = ~~(trackDuration / 1000);
@@ -291,7 +298,7 @@ export default class {
       }
     }, 1000);
   }
-  _getNextTrack(isReadonly) {
+  _getNextTrack(isReadonly = false) {
     const next = this._reversed ? this.current - 1 : this.current + 1;
 
     if (this._playNextList.length > 0) {
@@ -805,6 +812,7 @@ export default class {
         ', index : ' +
         this.current
     );
+    this.prevTrackID = this.currentTrackID;
 
     let isPlayFinish = this._isPlayFinish();
     // NOTE 自然播放完成后，才可以重放
@@ -890,11 +898,21 @@ export default class {
     return true;
   }
   playPrevTrack() {
-    const [trackID, index] = this._getPrevTrack();
+    // const [trackID, index] = this._getPrevTrack();
+    let trackID;
+    let index;
+    if (this.prevTrackID != '') {
+      //将当前曲目添加到next队列中，确保这个曲目不被跳过
+      console.log('play prev not skip : ');
+      this._playNextList.unshift(this.currentTrackID);
+      [trackID, index] = [this.prevTrackID, this.current];
+      this.prevTrackID = '';
+    } else {
+      [trackID, index] = this._getPrevTrack();
+    }
+
     if (trackID === undefined) return false;
-    let limitSeconds = 3 * 60;
-    let isShortSongs = this.currentTrackDuration < limitSeconds;
-    if (isShortSongs) {
+    if (this._isShortSongs()) {
       // NOTE 点击上一曲时，重置repeatOnce变量，实现上一曲时正常重放
       console.log('playPrevTrack(), SO RESET repeatOnceTrackID');
       this.repeatOnceTrackID = trackID;
